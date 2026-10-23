@@ -3,16 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LangoBolt</title>
+    <link rel="stylesheet" href="styles/style.css">
+    <title>Langobook</title>
 </head>
 <body>
-    <h1>Hallo Privyet ha</h1>
+    <h1>The Textbook</h1>
     <input accept="application/pdf" type="file" id="pdfInput"><br>
     <button id="prev">◀</button>
     <span id="pageInfo"></span>
     <button id="next">▶</button><br>
+
+    <div id ="stage">
     <canvas id="pdfCanvas"></canvas>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-    <script src="app.js"></script>
+    <canvas id="inkCanvas"></canvas>
+    </div>
+
+
 </body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="js/app.js"></script>
 </html>

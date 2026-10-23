@@ -1,0 +1,13 @@
+#stage {
+    position:relative;
+    display: inline-block;
+}
+canvas { 
+    display: block; 
+}
+#inkCanvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    touch-action: none;
+}
