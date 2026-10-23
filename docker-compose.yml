@@ -1,0 +1,9 @@
+services:
+  api:
+    build: .
+    container_name: lingobolt
+    ports: 
+      - "8000:8000"
+    restart: unless-stopped
+    environment: 
+      - FRONTEND_DIR=/code/app/frontend
