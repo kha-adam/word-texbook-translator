@@ -14,3 +14,4 @@ app.mount("/", StaticFiles(directory=FRONTEND_DIR, html=True), name="frontend")
 @app.get("/api/health")
 def health_check():
     return {"status": "ok"}
+
