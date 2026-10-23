@@ -21,6 +21,7 @@ async function renderPage(num){
         viewport: viewport,
         transform: [dpr, 0, 0, dpr, 0, 0],
     }).promise
+    document.getElementById("pageInfo").textContent = num +"/"+pdfDoc.numPages;
 }
 
 file_input.addEventListener("change", async (event) => {
@@ -31,3 +32,20 @@ file_input.addEventListener("change", async (event) => {
     pageNum = 1;
     renderPage(pageNum);
 });
+
+document.getElementById("next").onclick = () => {
+    if (pdfDoc == null || pageNum == pdfDoc.numPages){
+        return;
+    }else{
+        pageNum += 1;
+        renderPage(pageNum);
+    }
+};
+document.getElementById("prev").onclick = () => {
+    if (pdfDoc == null || pageNum == 1){
+        return;
+    }else{
+        pageNum -= 1;
+        renderPage(pageNum);
+    }
+};
