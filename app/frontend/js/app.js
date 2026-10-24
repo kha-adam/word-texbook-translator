@@ -6,9 +6,13 @@ const canvas = document.querySelector("#pdfCanvas");
 const ctx = canvas.getContext("2d");
 const ink = document.getElementById("inkCanvas");
 const inkCtx = ink.getContext("2d");
+const strokesByPage = new Map();
+
 let drawing = false;
 let lastX = 0;
 let lastY = 0;
+
+let currentStroke = null;
 
 let pdfDoc = null;
 let pageNum = 1;
@@ -36,9 +40,36 @@ async function renderPage(num){
     inkCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
     inkCtx.lineCap = "round";
     inkCtx.strokeStyle =  "#d00";
+
+    redrawInk()
+}
+
+function getStrokes(num){
+    if (!strokesByPage.has(num)){
+        strokesByPage.set(num, []) ;
+    }
+    return strokesByPage.get(num);
+}
+
+function drawSegment(a, b){
+    inkCtx.beginPath();
+    inkCtx.moveTo(a.x, a.y);
+    inkCtx.lineTo(b.x, b.y);
+    inkCtx.lineWidth = 5 + b.pressure * 3;
+    inkCtx.stroke();
+}
+
+function redrawInk(){
+    inkCtx.clearRect(0, 0, ink.width, ink.height);
+    for (const stroke of getStrokes(pageNum)){
+        for (let i = 1; i < stroke.length; i++){
+            drawSegment(stroke[i-1], stroke[i]);
+        }
+    }
 }
 
 file_input.addEventListener("change", async (event) => {
+    strokesByPage.clear()
     const file = event.target.files[0];
     const buffer = await file.arrayBuffer();
     const data = new Uint8Array(buffer);
@@ -51,21 +82,25 @@ ink.addEventListener("pointerdown", (e) => {
     if (e.pointerType === "touch") return;
     drawing = true;
     ink.setPointerCapture(e.pointerId);
-    lastX = e.offsetX;
-    lastY = e.offsetY;
+    currentStroke = [{x: e.offsetX, y:e.offsetY, pressure: e.pressure}];
+    getStrokes(pageNum).push(currentStroke);
 });
 ink.addEventListener("pointermove", (e) => {
     if (!drawing) return;
-    inkCtx.beginPath();
-    inkCtx.moveTo(lastX, lastY);
-    inkCtx.lineTo(e.offsetX, e.offsetY);
-    inkCtx.lineWidth = 5 + e.pressure * 3;
-    inkCtx.stroke();
-    lastX = e.offsetX;
-    lastY = e.offsetY;
+    const prev = currentStroke[currentStroke.length - 1];
+    const point = {x:e.offsetX, y:e.offsetY, pressure: e.pressure};
+    currentStroke.push(point);
+    drawSegment(prev, point);
+
 });
-ink.addEventListener("pointerup", (e) => { drawing = false; });
-ink.addEventListener("pointercancel", (e) => { drawing = false; });
+ink.addEventListener("pointerup", (e) => { 
+    drawing = false; 
+    currentStroke = null;
+});
+ink.addEventListener("pointercancel", (e) => { 
+    drawing = false; 
+    currentStroke = null;
+});
 
 document.getElementById("next").onclick = () => {
     if (pdfDoc == null || pageNum == pdfDoc.numPages){
