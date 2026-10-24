@@ -20,7 +20,9 @@ def health_check():
 async def ocr(file: UploadFile = File(...)):
     data = await file.read()
     image = Image.open(io.BytesIO(data))
-    text = pytesseract.image_to_string(image, lang='rus', config="--psm 7")
+    image = image.convert("L")
+    image = image.resize((image.width * 2, image.height * 2), Image.LANCZOS)
+    text = pytesseract.image_to_string(image, lang='rus', config="--psm 6")
     return {"text": text.strip()}
 
 app.mount("/", StaticFiles(directory=FRONTEND_DIR, html=True), name="frontend")

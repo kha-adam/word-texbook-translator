@@ -135,11 +135,15 @@ ink.addEventListener("pointerup", (e) => {
         preview.src = crop.toDataURL("image/png");
 
         crop.toBlob(async(blob) => {
+            const result = document.getElementById("result");
+            result.textContent = "Reading...";
+            try{
             const form = new FormData();
             form.append("file", blob, "crop.png");
             const res = await fetch("/api/ocr", {method: "POST", body: form});
             const data = await res.json();
-            document.getElementById("result").textContent = data.text;
+            result.textContent = data.text;
+            } catch (err) { result.textContent = "Error: " + err.message; }
         }, "image/png");
 
         selBox.style.display = "none";
