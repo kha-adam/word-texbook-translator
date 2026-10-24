@@ -8,9 +8,12 @@ const ink = document.getElementById("inkCanvas");
 const inkCtx = ink.getContext("2d");
 const strokesByPage = new Map();
 
+const selBox = document.getElementById("selBox");
+const preview = document.getElementById("preview");
+
 let drawing = false;
-let lastX = 0;
-let lastY = 0;
+let mode = "draw";
+let selStart = null;
 
 let currentStroke = null;
 
@@ -68,6 +71,11 @@ function redrawInk(){
     }
 }
 
+// function blockPencilScroll(e){
+//     const t = e.changedTouches[0];
+//     if (t&&t.touchType === "stylus")
+// }
+
 file_input.addEventListener("change", async (event) => {
     strokesByPage.clear()
     const file = event.target.files[0];
@@ -80,12 +88,27 @@ file_input.addEventListener("change", async (event) => {
 
 ink.addEventListener("pointerdown", (e) => {
     if (e.pointerType === "touch") return;
+    if (mode === "select"){
+        selStart = {x:e.offsetX, y:e.offsetY};
+        ink.setPointerCapture(e.pointerId);
+        selBox.style.display = "block";
+        return;
+    }
     drawing = true;
     ink.setPointerCapture(e.pointerId);
     currentStroke = [{x: e.offsetX, y:e.offsetY, pressure: e.pressure}];
     getStrokes(pageNum).push(currentStroke);
 });
 ink.addEventListener("pointermove", (e) => {
+    if (mode === "select" && selStart){
+        const left = Math.min(selStart.x, e.offsetX);
+        const top = Math.min(selStart.y, e.offsetY);
+        selBox.style.left = left + "px";
+        selBox.style.top = top + "px";
+        selBox.style.width = Math.abs(e.offsetX - selStart.x) + "px";
+        selBox.style.height = Math.abs(e.offsetY - selStart.y)+ "px";
+        return;   
+    }
     if (!drawing) return;
     const prev = currentStroke[currentStroke.length - 1];
     const point = {x:e.offsetX, y:e.offsetY, pressure: e.pressure};
@@ -94,6 +117,31 @@ ink.addEventListener("pointermove", (e) => {
 
 });
 ink.addEventListener("pointerup", (e) => { 
+    if (mode === "select" && selStart){
+        const dpr = devicePixelRatio || 1;
+        const left = parseFloat(selBox.style.left);
+        const top = parseFloat(selBox.style.top);
+        const width = parseFloat(selBox.style.width);
+        const height = parseFloat(selBox.style.height);
+        if (width < 5 || height < 5){
+            selBox.style.display = "none";
+            selStart = null;
+            return;
+        }
+        const crop = document.createElement("canvas");
+        crop.width = width * dpr;
+        crop.height = height * dpr;
+
+        crop.getContext("2d").drawImage(
+            canvas,
+            left * dpr, top * dpr, width * dpr, height * dpr,
+            0, 0, width * dpr, height * dpr
+        );
+        preview.src = crop.toDataURL("image/png");
+        selBox.style.display = "none";
+        selStart = null;
+
+    }
     drawing = false; 
     currentStroke = null;
 });
@@ -101,6 +149,9 @@ ink.addEventListener("pointercancel", (e) => {
     drawing = false; 
     currentStroke = null;
 });
+ink.addEventListener("touchmove", (e) => {
+    if (e.touches[0].touchType === "stylus") e.preventDefault();
+}, {passive: false});
 
 document.getElementById("next").onclick = () => {
     if (pdfDoc == null || pageNum == pdfDoc.numPages){
@@ -118,3 +169,5 @@ document.getElementById("prev").onclick = () => {
         renderPage(pageNum);
     }
 };
+document.getElementById("modeDraw").onclick = () => {mode = "draw"};
+document.getElementById("modeSelect").onclick = () => {mode = "select"};

@@ -8,15 +8,20 @@
 </head>
 <body>
     <h1>The Textbook</h1>
-    <input accept="application/pdf" type="file" id="pdfInput"><br>
-    <button id="prev">◀</button>
-    <span id="pageInfo"></span>
-    <button id="next">▶</button><br>
-
-    <div id ="stage">
-    <canvas id="pdfCanvas"></canvas>
-    <canvas id="inkCanvas"></canvas>
+    <div id="toolbar">
+        <input accept="application/pdf" type="file" id="pdfInput">
+        <button id="prev">◀</button>
+        <span id="pageInfo"></span>
+        <button id="next">▶</button>
+        <button id="modeDraw">Draw</button>
+        <button id="modeSelect">Select</button>
     </div>
+    <div id ="stage">
+        <canvas id="pdfCanvas"></canvas>
+        <canvas id="inkCanvas"></canvas>
+        <div id="selBox"></div>
+    </div>
+    <img id="preview">
 
 
 </body>
