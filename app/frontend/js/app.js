@@ -71,11 +71,6 @@ function redrawInk(){
     }
 }
 
-// function blockPencilScroll(e){
-//     const t = e.changedTouches[0];
-//     if (t&&t.touchType === "stylus")
-// }
-
 file_input.addEventListener("change", async (event) => {
     strokesByPage.clear()
     const file = event.target.files[0];
@@ -138,6 +133,15 @@ ink.addEventListener("pointerup", (e) => {
             0, 0, width * dpr, height * dpr
         );
         preview.src = crop.toDataURL("image/png");
+
+        crop.toBlob(async(blob) => {
+            const form = new FormData();
+            form.append("file", blob, "crop.png");
+            const res = await fetch("/api/ocr", {method: "POST", body: form});
+            const data = await res.json();
+            document.getElementById("result").textContent = data.text;
+        }, "image/png");
+
         selBox.style.display = "none";
         selStart = null;
 
