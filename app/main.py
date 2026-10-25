@@ -6,6 +6,9 @@ import os
 import io
 import pytesseract
 from PIL import Image
+
+from app.translator import translate
+
 load_dotenv()
 
 FRONTEND_DIR = os.getenv('FRONTEND_DIR')
@@ -23,6 +26,11 @@ async def ocr(file: UploadFile = File(...)):
     image = image.convert("L")
     image = image.resize((image.width * 2, image.height * 2), Image.LANCZOS)
     text = pytesseract.image_to_string(image, lang='rus', config="--psm 6")
-    return {"text": text.strip()}
+    try:
+        translation = translate(text, "ru", "en")
+    except Exception as e:
+        translation = None
+        print("translation failed:", e)
+    return {"text": text, "translation": translation}
 
 app.mount("/", StaticFiles(directory=FRONTEND_DIR, html=True), name="frontend")
