@@ -9,7 +9,6 @@ const inkCtx = ink.getContext("2d");
 const strokesByPage = new Map();
 
 const selBox = document.getElementById("selBox");
-const preview = document.getElementById("preview");
 
 let drawing = false;
 let mode = "draw";
@@ -132,7 +131,6 @@ ink.addEventListener("pointerup", (e) => {
             left * dpr, top * dpr, width * dpr, height * dpr,
             0, 0, width * dpr, height * dpr
         );
-        preview.src = crop.toDataURL("image/png");
 
         crop.toBlob(async(blob) => {
             const ocrScan = document.getElementById("ocrScan");
