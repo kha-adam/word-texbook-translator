@@ -14,8 +14,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY alembic.ini .
 COPY alembic/ ./alembic/
-COPY .env ./
 COPY app/ ./app/
+COPY .env ./
 
 RUN mkdir -p /app/storage
 

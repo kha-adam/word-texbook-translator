@@ -53,7 +53,6 @@ from PIL import Image
 router = APIRouter()
 
 STORAGE_DIR = Path(settings.storage_dir)
-FRONTEND_DIR = Path(settings.frontend_dir)
 STORAGE_DIR.mkdir(exist_ok=True)
 
 @router.post("/api/ocr")

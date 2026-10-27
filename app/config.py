@@ -12,6 +12,10 @@ class Settings(BaseSettings):
     jwt_access_token_expire_minutes: int = 30
 
     translator: str = "libretranslate"
+    translate_url: str
+    postgres_user: str
+    postgres_password: str
+    postgres_db: str
 
     model_config = SettingsConfigDict(
         env_file=".env",
