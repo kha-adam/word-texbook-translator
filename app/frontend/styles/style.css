@@ -1,0 +1,31 @@
+#stage {
+    position:relative;
+    display: inline-block;
+}
+canvas { 
+    display: block; 
+}
+#inkCanvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    touch-action: auto;
+}
+#selBox {
+  position: absolute;
+  display: none;
+  pointer-events: none;
+  box-sizing: border-box;
+  border: 2px dashed #8ca9ff;
+}
+#toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 8px;
+  border-radius: 7px;
+  background: #909090;
+}
