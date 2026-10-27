@@ -1,0 +1,49 @@
+services:
+  db:
+    image: postgres:16
+    container_name: cloudbox-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+  api:
+    build: .
+    container_name: cloudbox-api
+    restart: unless-stopped
+    env_file: 
+      - .env.docker
+    ports:
+      - "8000:8000"
+    volumes:
+      - cloudbox_storage:/app/storage
+    depends_on:
+      db:
+        condition: service_healthy
+  cleanup-worker:
+    build: .
+    restart: unless-stopped
+    env_file:
+      - .env.docker
+    environment:
+      PYTHONUNBUFFERED: "1"
+      CLEANUP_INTERVAL_SECONDS: "300"
+    command: ["python", "-u", "-m", "app.workers.cleanup"]
+    volumes:
+      - cloudbox_storage:/app/storage
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+  cloudbox_storage:
