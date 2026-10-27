@@ -1,7 +1,7 @@
 services:
   db:
     image: postgres:16
-    container_name: cloudbox-db
+    container_name: langbook-db
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
@@ -18,17 +18,28 @@ services:
       retries: 5
   api:
     build: .
-    container_name: cloudbox-api
+    container_name: langbook-api
     restart: unless-stopped
     env_file: 
-      - .env.docker
+      - .env
+      - FRONTEND_DIR=/code/app/frontend
     ports:
       - "8000:8000"
     volumes:
-      - cloudbox_storage:/app/storage
+      - langbook_storage:/app/storage
     depends_on:
       db:
         condition: service_healthy
+  translator:
+    image: libretranslate/libretranslate
+    container_name: translator
+    restart: unless-stopped
+    ports:
+      - "5001:5000"
+    environment:
+      LT_LOAD_ONLY: "ru,en"
+    volumes:
+      - lt-models:/home/libretranslate/.local
   cleanup-worker:
     build: .
     restart: unless-stopped
@@ -39,11 +50,12 @@ services:
       CLEANUP_INTERVAL_SECONDS: "300"
     command: ["python", "-u", "-m", "app.workers.cleanup"]
     volumes:
-      - cloudbox_storage:/app/storage
+      - langbook_storage:/app/storage
     depends_on:
       db:
         condition: service_healthy
 
 volumes:
   postgres_data:
-  cloudbox_storage:
+  langbook_storage:
+  lt-models:

@@ -14,7 +14,7 @@ services:
     ports:
       - "5001:5000"
     environment:
-      LT_LOAD_ONLY: "ru,en,fr"            # only load the languages you need
+      LT_LOAD_ONLY: "ru,en"
     volumes:
       - lt-models:/home/libretranslate/.local
     # note: no "ports:" section, on purpose
