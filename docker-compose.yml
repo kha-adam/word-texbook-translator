@@ -22,7 +22,7 @@ services:
     container_name: langbook-api
     restart: unless-stopped
     env_file: 
-      - .env
+      - .env.docker
     environment:
       - FRONTEND_DIR=/code/app/frontend
     ports:
