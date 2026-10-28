@@ -1,5 +1,5 @@
-from datetime import UTC, datetime
 import uuid
+from datetime import UTC, datetime
 
 from sqlalchemy import DateTime, Float, ForeignKey, Index, Integer, String, text
 from sqlalchemy.dialects.postgresql import JSONB, UUID
@@ -94,12 +94,14 @@ class UploadSession(Base):
         DateTime(timezone=True), nullable=False
     )
 
+
 class Stroke(Base):
     __tablename__ = "strokes"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True)
     file_id: Mapped[int] = mapped_column(
-        ForeignKey("files.id", ondelete="CASCADE"), nullable=False)
+        ForeignKey("files.id", ondelete="CASCADE"), nullable=False
+    )
     page: Mapped[int] = mapped_column(Integer, nullable=False)
     points: Mapped[list] = mapped_column(JSONB, nullable=False)
     color: Mapped[str] = mapped_column(String(16), default="#d00")

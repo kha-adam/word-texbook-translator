@@ -1,9 +1,12 @@
 # ruff: noqa: B008
+import io
 from pathlib import Path
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, UploadFile, File
+import pytesseract
+from fastapi import APIRouter, Depends, File, HTTPException, Query, Request, UploadFile
 from fastapi import File as FastAPIFile
 from fastapi.responses import FileResponse
+from PIL import Image
 
 from app.config import settings
 from app.dependencies import get_current_user
@@ -46,14 +49,11 @@ from app.services.files import list_files as list_files_service
 from app.services.users import create_user, get_user_by_email
 from app.translator import translate
 
-import io
-import pytesseract
-from PIL import Image
-
 router = APIRouter()
 
 STORAGE_DIR = Path(settings.storage_dir)
 STORAGE_DIR.mkdir(exist_ok=True)
+
 
 @router.post("/api/ocr")
 async def ocr(file: UploadFile = File(...)):
@@ -61,13 +61,14 @@ async def ocr(file: UploadFile = File(...)):
     image = Image.open(io.BytesIO(data))
     image = image.convert("L")
     image = image.resize((image.width * 2, image.height * 2), Image.LANCZOS)
-    text = pytesseract.image_to_string(image, lang='rus', config="--psm 6")
+    text = pytesseract.image_to_string(image, lang="rus", config="--psm 6")
     try:
         translation = translate(text, "ru", "en")
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         translation = None
         print("translation failed:", e)
     return {"text": text, "translation": translation}
+
 
 @router.post("/files", response_model=FileUploadResponse)
 async def upload_file(

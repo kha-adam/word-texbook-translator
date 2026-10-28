@@ -4,11 +4,12 @@ Revision ID: 9736675209a2
 Revises: 6482dde5c2bf
 """
 
-from typing import Sequence
+from collections.abc import Sequence
 
 import sqlalchemy as sa
-from alembic import op
 from sqlalchemy.dialects import postgresql
+
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision: str = "9736675209a2"

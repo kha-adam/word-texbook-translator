@@ -28,6 +28,10 @@ jobs:
       DATABASE_URL: postgresql+psycopg://langbook:langbook_test_password@localhost:5432/langbook-test
       JWT_SECRET_KEY: ci-only-test-secret-not-for-production
       STORAGE_DIR: storage_test
+      TRANSLATE_URL: http://translator:5000
+      POSTGRES_USER: langbook
+      POSTGRES_PASSWORD: langbook_test_password
+      POSTGRES_DB: langbook-test
 
     steps:
       - name: Check out repository
