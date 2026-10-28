@@ -15,17 +15,17 @@ jobs:
         env:
           POSTGRES_USER: langbook
           POSTGRES_PASSWORD: langbook_test_password
-          POSTGRES_DB: langbook_test
+          POSTGRES_DB: langbook-test
         ports:
-          - 5433:5433
+          - 5432:5432
         options: >-
-          --health-cmd "pg_isready -U langbook -d langbook_test"
+          --health-cmd "pg_isready -U langbook -d langbook-test"
           --health-interval 5s
           --health-timeout 5s
           --health-retries 10
 
     env:
-      DATABASE_URL: postgresql+psycopg://langbook:langbook_test_password@localhost:5433/langbook_test
+      DATABASE_URL: postgresql+psycopg://langbook:langbook_test_password@localhost:5432/langbook-test
       JWT_SECRET_KEY: ci-only-test-secret-not-for-production
       STORAGE_DIR: storage_test
 

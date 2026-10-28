@@ -9,7 +9,7 @@ from sqlalchemy.engine import make_url
 
 from alembic import command
 
-load_dotenv(".env.test", override=False)
+load_dotenv(".env.test", override=True)
 
 from app.config import settings
 from app.database import SessionLocal
