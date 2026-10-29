@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from fastapi import FastAPI
+from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy import text
 
@@ -17,6 +18,15 @@ app.add_middleware(RequestBodyLimitMiddleware, max_body_size=105 * 1024 * 1024)
 app.include_router(router)
 
 FRONTEND_DIR = Path(settings.frontend_dir)
+
+
+@app.get("/login", include_in_schema=False)
+def login_page():
+    return FileResponse(FRONTEND_DIR / "login.html")
+
+@app.get("/signup", include_in_schema=False)
+def login_page():
+    return FileResponse(FRONTEND_DIR / "signup.html")
 
 
 @app.get("/health", response_model=HealthResponse)
