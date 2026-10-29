@@ -24,6 +24,7 @@ FRONTEND_DIR = Path(settings.frontend_dir)
 def login_page():
     return FileResponse(FRONTEND_DIR / "login.html")
 
+
 @app.get("/signup", include_in_schema=False)
 def signup_page():
     return FileResponse(FRONTEND_DIR / "signup.html")
