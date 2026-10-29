@@ -140,7 +140,7 @@ ink.addEventListener("pointerup", (e) => {
             try{
             const form = new FormData();
             form.append("file", blob, "crop.png");
-            const res = await fetch("/api/ocr", {method: "POST", body: form});
+            const res = await authFetch("/api/ocr", {method: "POST", body: form});
             const data = await res.json();
             ocrScan.textContent = data.text;
             result.textContent = data.translation ?? "Translation unavailable";

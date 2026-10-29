@@ -29,3 +29,11 @@ canvas {
   border-radius: 7px;
   background: #909090;
 }
+#grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px; padding: 16px; }
+.card { aspect-ratio: 3 / 4; border: 2px dashed #888; border-radius: 8px; display: flex;
+        align-items: center; justify-content: center; cursor: pointer; overflow: hidden; }
+.file-card { flex-direction: column; justify-content: flex-start; padding: 8px; box-sizing: border-box; }
+.card-thumbnail { display: flex; flex: 1; min-height: 0; width: 100%; align-items: center; justify-content: center; overflow: hidden; }
+.card-thumbnail canvas { max-width: 100%; max-height: 100%; object-fit: contain; }
+.card-filename { flex: 0 0 36px; width: 100%; display: flex; align-items: center; justify-content: center;
+                 overflow: hidden; text-align: center; text-overflow: ellipsis; white-space: nowrap; }
