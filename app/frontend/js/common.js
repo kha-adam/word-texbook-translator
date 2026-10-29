@@ -23,7 +23,7 @@ async function authFetch(url, options = {}){
 function renderNav(){
     const bar = document.createElement("div");
     bar.id = "navbar";
-    bar.innerHTML = '<a href="/">My files</a><button id=logoutBtn">Logout</button>';
+    bar.innerHTML = '<a href="/">My files</a><button id="logoutBtn">Logout</button>';
     document.body.prepend(bar);
     document.getElementById("logoutBtn").addEventListener("click", logout);
 }
