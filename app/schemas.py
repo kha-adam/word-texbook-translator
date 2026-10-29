@@ -44,6 +44,8 @@ class UserRegisterRequest(BaseModel):
 class UserRegisterResponse(BaseModel):
     id: int
     email: str
+    access_token: str
+    token_type: str
 
 
 class UserLoginRequest(BaseModel):

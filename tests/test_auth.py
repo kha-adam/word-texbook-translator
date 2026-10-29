@@ -25,6 +25,37 @@ def test_register_user():
     assert "password_hash" not in data
 
 
+def test_register_returns_token_and_authenticates_user():
+    response = client.post(
+        "/auth/register",
+        json={
+            "email": "new-user@example.com",
+            "password": "supersecret123",
+        },
+    )
+
+    assert response.status_code == 201
+    data = response.json()
+    assert data["token_type"] == "bearer"
+
+    payload = jwt.decode(
+        data["access_token"],
+        settings.jwt_secret_key,
+        algorithms=[settings.jwt_algorithm],
+    )
+    assert payload["sub"] == str(data["id"])
+
+    current_user_response = client.get(
+        "/auth/me",
+        headers={"Authorization": f"Bearer {data['access_token']}"},
+    )
+    assert current_user_response.status_code == 200
+    assert current_user_response.json() == {
+        "id": data["id"],
+        "email": "new-user@example.com",
+    }
+
+
 def test_register_hashes_password():
     response = client.post(
         "/auth/register",

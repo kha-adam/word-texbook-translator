@@ -321,10 +321,13 @@ def register_user(user: UserRegisterRequest):
     password_hash = hash_password(user.password)
 
     user_id = create_user(email=email, password_hash=password_hash)
+    access_token = create_access_token(user_id)
 
     return {
         "id": user_id,
         "email": email,
+        "access_token": access_token,
+        "token_type": "bearer",
     }
 
 
