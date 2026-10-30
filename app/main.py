@@ -20,6 +20,11 @@ app.include_router(router)
 FRONTEND_DIR = Path(settings.frontend_dir)
 
 
+@app.get("/viewer", include_in_schema=False)
+def login_page():
+    return FileResponse(FRONTEND_DIR / "viewer.html")
+
+
 @app.get("/login", include_in_schema=False)
 def login_page():
     return FileResponse(FRONTEND_DIR / "login.html")

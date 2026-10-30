@@ -106,6 +106,28 @@ def test_upload_and_download_file():
     assert "hello.txt" in download_response.headers["content-disposition"]
 
 
+def test_download_file_supports_byte_ranges():
+    headers = get_auth_headers()
+    content = b"0123456789"
+
+    upload_response = client.post(
+        "/files",
+        files={"file": ("range.txt", content, "text/plain")},
+        headers=headers,
+    )
+    assert upload_response.status_code == 200
+    file_id = upload_response.json()["id"]
+
+    response = client.get(
+        f"/files/{file_id}/download",
+        headers={**headers, "Range": "bytes=2-5"},
+    )
+
+    assert response.status_code == 206
+    assert response.content == b"2345"
+    assert response.headers["content-range"] == "bytes 2-5/10"
+
+
 def test_list_files():
     headers = get_auth_headers()
     first_content = b"First file"

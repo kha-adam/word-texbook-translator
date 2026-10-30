@@ -28,7 +28,7 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - langbook_storage:/app/storage
+      - langbook_storage:/storage
     depends_on:
       db:
         condition: service_healthy
@@ -52,7 +52,7 @@ services:
       CLEANUP_INTERVAL_SECONDS: "300"
     command: ["python", "-u", "-m", "app.workers.cleanup"]
     volumes:
-      - langbook_storage:/app/storage
+      - langbook_storage:/storage
     depends_on:
       db:
         condition: service_healthy
