@@ -1,7 +1,13 @@
 pdfjsLib.GlobalWorkerOptions.workerSrc =
   "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
 
-const file_input = document.getElementById("pdfInput");
+
+const queryString = window.location.search;
+
+const urlParams = new URLSearchParams(queryString);
+
+const fileId = parseInt(urlParams.get('file'));
+
 const canvas = document.querySelector("#pdfCanvas");
 const ctx = canvas.getContext("2d");
 const ink = document.getElementById("inkCanvas");
@@ -18,6 +24,10 @@ let currentStroke = null;
 
 let pdfDoc = null;
 let pageNum = 1;
+
+function showMessage(message){
+    document.getElementById("message").textContent = message;
+}
 
 async function renderPage(num){
     const page = await pdfDoc.getPage(num);
@@ -69,16 +79,26 @@ function redrawInk(){
         }
     }
 }
-
-file_input.addEventListener("change", async (event) => {
-    strokesByPage.clear()
-    const file = event.target.files[0];
-    const buffer = await file.arrayBuffer();
-    const data = new Uint8Array(buffer);
-    pdfDoc = await pdfjsLib.getDocument({ data }).promise;
-    pageNum = 1;
-    renderPage(pageNum);
-});
+async function loadDocument(id) {
+  const task = pdfjsLib.getDocument({
+    url: "/files/" + id + "/download",            
+    httpHeaders: { Authorization: "Bearer " + getToken() }, 
+  });
+  pdfDoc = await task.promise;
+  pageNum = 1;
+  await renderPage(pageNum);
+}
+(async () => {
+  try {
+    await loadDocument(fileId);
+  } catch (err) {
+    console.error(err);
+    // PDF.js errors may carry the HTTP status in err.status
+    if (err.status === 401) logout();
+    else if (err.status === 404) showMessage("File not found.");
+    else showMessage("Could not open this file.");
+  }
+})();
 
 ink.addEventListener("pointerdown", (e) => {
     if (e.pointerType === "touch") return;

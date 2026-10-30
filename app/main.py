@@ -21,7 +21,7 @@ FRONTEND_DIR = Path(settings.frontend_dir)
 
 
 @app.get("/viewer", include_in_schema=False)
-def login_page():
+def viewer_page():
     return FileResponse(FRONTEND_DIR / "viewer.html")
 
 

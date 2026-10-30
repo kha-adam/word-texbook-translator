@@ -56,7 +56,9 @@ STORAGE_DIR.mkdir(exist_ok=True)
 
 
 @router.post("/api/ocr")
-async def ocr(file: UploadFile = File(...)):
+async def ocr(
+    file: UploadFile = File(...), current_user: User = Depends(get_current_user)
+):
     data = await file.read()
     image = Image.open(io.BytesIO(data))
     image = image.convert("L")
