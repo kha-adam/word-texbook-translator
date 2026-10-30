@@ -1,3 +1,4 @@
+import uuid
 from datetime import datetime
 
 from pydantic import BaseModel, EmailStr, Field
@@ -87,3 +88,21 @@ class UploadStatusResponse(BaseModel):
     missing_chunks: list[int]
     status: str
     expires_at: datetime
+
+
+class StrokeIn(BaseModel):
+    id: uuid.UUID
+    page: int = Field(ge=1, le=10000)
+    points: list[tuple[float, float, float]] = Field(min_length=2, max_length=5000)
+    color: str = Field(pattern=r"^#[0-9a-fA-F]{3,8}$")
+
+
+class StrokeBatch(BaseModel):
+    strokes: list[StrokeIn] = Field(max_length=200)
+
+
+class StrokeOut(BaseModel):
+    id: uuid.UUID
+    page: int
+    points: list[tuple[float, float, float]]
+    color: str

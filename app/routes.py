@@ -5,7 +5,7 @@ from pathlib import Path
 import pytesseract
 from fastapi import APIRouter, Depends, File, HTTPException, Query, Request, UploadFile
 from fastapi import File as FastAPIFile
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, Response
 from PIL import Image
 
 from app.config import settings
@@ -16,6 +16,8 @@ from app.schemas import (
     DeleteFileResponse,
     FileListResponse,
     FileUploadResponse,
+    StrokeBatch,
+    StrokeOut,
     UploadSessionCreateRequest,
     UploadSessionResponse,
     UploadStatusResponse,
@@ -46,6 +48,12 @@ from app.services.files import (
     save_uploaded_file,
 )
 from app.services.files import list_files as list_files_service
+from app.services.strokes import (
+    get_strokes,
+)
+from app.services.strokes import (
+    save_strokes as save_strokes_service,
+)
 from app.services.users import create_user, get_user_by_email
 from app.translator import translate
 
@@ -70,6 +78,47 @@ async def ocr(
         translation = None
         print("translation failed:", e)
     return {"text": text, "translation": translation}
+
+
+@router.get("/files/{file_id}/pages/{page}/strokes", response_model=list[StrokeOut])
+def list_strokes(
+    file_id: int,
+    page: int,
+    current_user: User = Depends(get_current_user),
+):
+    file = get_file(file_id, current_user.id)
+    if file is None:
+        raise HTTPException(status_code=404, detail="File not found")
+
+    return get_strokes(file.id, page)
+
+
+@router.post("/files/{file_id}/strokes", status_code=204)
+def save_strokes_route(
+    file_id: int,
+    batch: StrokeBatch,
+    current_user: User = Depends(get_current_user),
+):
+    file = get_file(file_id, current_user.id)
+    if file is None:
+        raise HTTPException(status_code=404, detail="File not found")
+
+    if not batch.strokes:
+        return Response(status_code=204)
+
+    rows = [
+        {
+            "id": stroke.id,
+            "file_id": file.id,
+            "page": stroke.page,
+            "points": stroke.points,
+            "color": stroke.color,
+        }
+        for stroke in batch.strokes
+    ]
+    save_strokes_service(rows)
+
+    return Response(status_code=204)
 
 
 @router.post("/files", response_model=FileUploadResponse)
