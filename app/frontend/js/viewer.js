@@ -13,6 +13,11 @@ const ctx = canvas.getContext("2d");
 const ink = document.getElementById("inkCanvas");
 const inkCtx = ink.getContext("2d");
 const strokesByPage = new Map();
+const loadedPages = new Set();
+const STROKE_COLOR = "#d00";
+const DISPLAY_SCALE = 1.5;
+const LINE_WIDTH_AT_SCALE_1 = 5 / DISPLAY_SCALE;
+const PRESSURE_WIDTH_AT_SCALE_1 = 3 / DISPLAY_SCALE;
 
 const selBox = document.getElementById("selBox");
 
@@ -24,6 +29,7 @@ let currentStroke = null;
 
 let pdfDoc = null;
 let pageNum = 1;
+let renderScale = DISPLAY_SCALE;
 
 function showMessage(message){
     document.getElementById("message").textContent = message;
@@ -31,7 +37,8 @@ function showMessage(message){
 
 async function renderPage(num){
     const page = await pdfDoc.getPage(num);
-    const viewport = page.getViewport({scale:1.5});
+    const viewport = page.getViewport({scale: DISPLAY_SCALE});
+    renderScale = viewport.scale;
     const dpr = window.devicePixelRatio || 1;
     canvas.width = viewport.width * dpr;
     canvas.height = viewport.height * dpr;
@@ -51,9 +58,10 @@ async function renderPage(num){
     ink.style.height = canvas.style.height;
     inkCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
     inkCtx.lineCap = "round";
-    inkCtx.strokeStyle =  "#d00";
+    inkCtx.strokeStyle = STROKE_COLOR;
 
-    redrawInk()
+    await loadStrokesForPage(num);
+    redrawInk();
 }
 
 function getStrokes(num){
@@ -63,19 +71,96 @@ function getStrokes(num){
     return strokesByPage.get(num);
 }
 
+function pointsFromApi(points){
+    return points.map(([x, y, pressure]) => ({x, y, pressure}));
+}
+
+function pointsToApi(points){
+    return points.map((p) => [p.x, p.y, p.pressure ?? 0.5]);
+}
+
+async function loadStrokesForPage(num){
+    if (loadedPages.has(num)) return;
+    try {
+        const res = await authFetch(`/files/${fileId}/pages/${num}/strokes`);
+        if (!res.ok) return;
+        const data = await res.json();
+        const existing = getStrokes(num);
+        const existingIds = new Set(existing.map((stroke) => stroke.id));
+        for (const stroke of data){
+            if (existingIds.has(stroke.id)) continue;
+            existing.push({
+                id: stroke.id,
+                points: pointsFromApi(stroke.points),
+                color: stroke.color || STROKE_COLOR,
+            });
+        }
+        loadedPages.add(num);
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+async function persistStroke(stroke, page){
+    try {
+        const res = await authFetch(`/files/${fileId}/strokes`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                strokes: [{
+                    id: stroke.id,
+                    page,
+                    points: pointsToApi(stroke.points),
+                    color: stroke.color || STROKE_COLOR,
+                }],
+            }),
+        });
+        if (!res.ok) console.error("Failed to save stroke", res.status);
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+function dropCurrentStroke(){
+    if (!currentStroke) return;
+    const list = getStrokes(pageNum);
+    const idx = list.indexOf(currentStroke);
+    if (idx >= 0) list.splice(idx, 1);
+}
+
+function eventToPagePoint(e){
+    return {
+        x: e.offsetX / renderScale,
+        y: e.offsetY / renderScale,
+        pressure: e.pressure,
+    };
+}
+
+function toScreen(p){
+    return {
+        x: p.x * renderScale,
+        y: p.y * renderScale,
+        pressure: p.pressure,
+    };
+}
+
 function drawSegment(a, b){
+    const from = toScreen(a);
+    const to = toScreen(b);
     inkCtx.beginPath();
-    inkCtx.moveTo(a.x, a.y);
-    inkCtx.lineTo(b.x, b.y);
-    inkCtx.lineWidth = 5 + b.pressure * 3;
+    inkCtx.moveTo(from.x, from.y);
+    inkCtx.lineTo(to.x, to.y);
+    inkCtx.lineWidth = (LINE_WIDTH_AT_SCALE_1 + to.pressure * PRESSURE_WIDTH_AT_SCALE_1) * renderScale;
     inkCtx.stroke();
 }
 
 function redrawInk(){
     inkCtx.clearRect(0, 0, ink.width, ink.height);
     for (const stroke of getStrokes(pageNum)){
-        for (let i = 1; i < stroke.length; i++){
-            drawSegment(stroke[i-1], stroke[i]);
+        inkCtx.strokeStyle = stroke.color || STROKE_COLOR;
+        const points = stroke.points;
+        for (let i = 1; i < points.length; i++){
+            drawSegment(points[i-1], points[i]);
         }
     }
 }
@@ -110,7 +195,11 @@ ink.addEventListener("pointerdown", (e) => {
     }
     drawing = true;
     ink.setPointerCapture(e.pointerId);
-    currentStroke = [{x: e.offsetX, y:e.offsetY, pressure: e.pressure}];
+    currentStroke = {
+        id: crypto.randomUUID(),
+        points: [eventToPagePoint(e)],
+        color: STROKE_COLOR,
+    };
     getStrokes(pageNum).push(currentStroke);
 });
 ink.addEventListener("pointermove", (e) => {
@@ -124,9 +213,9 @@ ink.addEventListener("pointermove", (e) => {
         return;   
     }
     if (!drawing) return;
-    const prev = currentStroke[currentStroke.length - 1];
-    const point = {x:e.offsetX, y:e.offsetY, pressure: e.pressure};
-    currentStroke.push(point);
+    const prev = currentStroke.points[currentStroke.points.length - 1];
+    const point = eventToPagePoint(e);
+    currentStroke.points.push(point);
     drawSegment(prev, point);
 
 });
@@ -169,12 +258,23 @@ ink.addEventListener("pointerup", (e) => {
 
         selBox.style.display = "none";
         selStart = null;
-
+        return;
+    }
+    if (drawing && currentStroke){
+        if (currentStroke.points.length < 2){
+            dropCurrentStroke();
+        } else {
+            persistStroke(currentStroke, pageNum);
+        }
     }
     drawing = false; 
     currentStroke = null;
 });
 ink.addEventListener("pointercancel", (e) => { 
+    if (drawing){
+        dropCurrentStroke();
+        redrawInk();
+    }
     drawing = false; 
     currentStroke = null;
 });
