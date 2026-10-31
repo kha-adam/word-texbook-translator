@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#E2001A">
+    <title>Reader · Cinabre</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Outfit:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body class="viewer-page" data-mode="draw">
+    <div class="viewer-shell">
+        <div id="toolbar">
+            <button id="prev" type="button" aria-label="Previous page">◀</button>
+            <span id="pageInfo"></span>
+            <button id="next" type="button" aria-label="Next page">▶</button>
+            <div class="mode-group" role="group" aria-label="Pointer mode">
+                <button id="modeDraw" class="is-active" type="button">Ink</button>
+                <button id="modeSelect" type="button">Gloss</button>
+            </div>
+        </div>
+        <div class="viewer-layout">
+            <div class="stage-wrap">
+                <div id="stage">
+                    <canvas id="pdfCanvas"></canvas>
+                    <canvas id="inkCanvas"></canvas>
+                    <div id="selBox"></div>
+                </div>
+            </div>
+            <aside class="gloss-panel">
+                <h2>Gloss</h2>
+                <p class="lede">Select a passage to read and translate it.</p>
+                <div class="gloss-label">Original</div>
+                <span id="ocrScan"></span>
+                <div class="gloss-label">Translation</div>
+                <span id="result"></span>
+                <p id="message"></p>
+            </aside>
+        </div>
+    </div>
+    <script type="module" src="/src/viewer/main.ts"></script>
+</body>
+</html>
