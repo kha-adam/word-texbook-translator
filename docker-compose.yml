@@ -24,7 +24,7 @@ services:
     env_file: 
       - .env.docker
     environment:
-      - FRONTEND_DIR=/code/app/frontend
+      - FRONTEND_DIR=/code/frontend/dist
     ports:
       - "8000:8000"
     volumes:
