@@ -46,7 +46,7 @@ export function renderNav(): void {
   bar.innerHTML =
     '<a class="brand" href="/">' +
     '<span class="brand-mark" aria-hidden="true"></span>' +
-    '<span class="brand-name">Cinabre</span>' +
+    '<span class="brand-name">Langbook</span>' +
     "</a>" +
     '<nav class="nav-actions">' +
     '<a class="nav-link" href="/">Library</a>' +

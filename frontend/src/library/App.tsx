@@ -85,7 +85,7 @@ export function App() {
       <header className="page-header">
         <div>
           <h1>Library</h1>
-          <p className="lede">Your textbooks, ready to mark in cinabre red.</p>
+          <p className="lede">Your textbooks, ready to mark in Langbook red.</p>
         </div>
       </header>
       <div id="grid">
