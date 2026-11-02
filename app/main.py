@@ -11,7 +11,7 @@ from app.middleware import RequestBodyLimitMiddleware
 from app.routes import router
 from app.schemas import HealthResponse
 
-app = FastAPI(title="Cinabre")
+app = FastAPI(title="Langbook")
 
 app.add_middleware(RequestBodyLimitMiddleware, max_body_size=105 * 1024 * 1024)
 
